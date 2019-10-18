@@ -9,9 +9,12 @@ output:
 Este workshop esta dirigido a personas interesadas en explorar las aplicaciones de algoritmos de Machine Learning (ML) en problemas de la vida real. Al finalizar el taller se espera que los asistentes identifiquen las oportunidades de aplicacion de tecnicas de ML en contextos interdisciplinarios, como lo es el ambito economico.
 
 
+El siguiente problema fue extraido con autorizacion previa de https://www.kaggle.com/passnyc/data-science-for-good y https://www.kaggle.com/laiyipeng/target-schools-action-recommended-for-passnyc, y modificado para fines academicos.
+
+
 ## Resumen del problema
 
-PASSNYC es una organización sin ánimo de lucro que se dedica a ampliar las oportunidades educativas para los estudiantes talentosos y desatendidos de la ciudad de Nueva York. Nueva York alberga algunas de las instituciones educativas mas avanzadas en el mundo; sin embargo en años recientes, las escuelas secundarias especializadas de la ciudad o Specialized High Schools (SPSH) - instituciones con un impacto historicamente transformador en los resultados estudiantiles = han visto un cambio hacia una demografía más homogénea del cuerpo estudiantil. 
+PASSNYC es una organización sin ánimo de lucro que se dedica a ampliar las oportunidades educativas para los estudiantes talentosos y desatendidos de la ciudad de Nueva York. Nueva York alberga algunas de las instituciones educativas mas avanzadas en el mundo; sin embargo en años recientes, las escuelas secundarias especializadas de la ciudad o Specialized High Schools (SPSH) - instituciones con un impacto historicamente transformador en los resultados estudiantiles - han visto un cambio hacia una demografía más homogénea del cuerpo estudiantil. 
 
 
 PASSNYC utiliza datos públicos para identificar a los estudiantes dentro de los distritos escolares de bajo rendimiento de la ciudad de Nueva York y, a través de consultas y colaboración con socios, tiene como objetivo aumentar la diversidad de estudiantes que toman el Examen de ingreso a la escuela secundaria especializado (SHSAT). Al enfocar los esfuerzos en áreas de bajo rendimiento que históricamente están subrepresentadas en el registro de SHSAT, PASSNYC ayudará a allanar el camino hacia las escuelas secundarias especializadas para un grupo más diverso de estudiantes.
@@ -20,11 +23,10 @@ PASSNYC utiliza datos públicos para identificar a los estudiantes dentro de los
 PASSNYC y sus socios brindan servicios de divulgación que mejoran las posibilidades de que los estudiantes tomen el SHSAT y reciban colocaciones en estas escuelas secundarias especializadas. El proceso actual de identificación de escuelas es efectivo, pero PASSNYC podría tener un impacto aún mayor con un enfoque más informado y granular para cuantificar el potencial de divulgación en una escuela determinada. 
 
 
-### Bases de datos a evaluar
-
-
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 # Initial setup
+# install.packages(c('ggplot2','dplyr', 'knitr', 'DT', 'htmltools', 'gridExtra', 'kableExtra'))
+
 library(ggplot2)
 library(dplyr)
 library(knitr)
@@ -35,7 +37,28 @@ library(kableExtra)
 ```
 
 ## 1. Preprocesamiento de datos
-El primer paso en la construccion de modelos de ML es el preprocesamiento de datos. Usualmente nos encontraremos con diversas fuentes de datos que contienen informacion valiosa para el modelo. Una de las ventajas de Data Science es la capacidad de manejar cantidades grandes de datos, por lo que tomaremos informacion de 11 bases de datos publicas de Nueva York para realizar nuestro modelo.
+El primer paso en la construccion de modelos de ML es el preprocesamiento de datos. Usualmente nos encontraremos con diversas fuentes de datos que contienen informacion valiosa para el modelo. Una de las ventajas de Data Science es la capacidad de manejar cantidades grandes de datos, por lo que tomaremos informacion de 7 bases de datos publicas de Nueva York para realizar nuestro modelo.
+
+
+### Bases de datos a evaluar
+Dividiremos las bases de datos en tres grupos: generales, demográficas y académicas. \n
+
+>__Generales:__</br>
+
+1. Middle school directory: Directorio con todas las escuelas intermedias en NY.
+2. Average class size: Tamaño promedio de las clases en todas las escuelas intermedias.
+3. Pupil to teacher ratio: Ratio de # alumnos / # maestros por escuela.
+
+>__Demográficas:__</br>
+
+4. School explorer: Aspectos demograficos generales de las escuelas intermedias en NY.
+5. Student composition: Aspectos demograficos de las escuelas intermedias en NY, como composición demográfica (%) de cada escuela.
+
+>__Académicas:__</br>
+
+6. Offers received by students in different middle schools: Numero de estudiantes que presentan el SHSAT, y estudiantes que son admitidos a una SPSH por escuela intermedia.
+7. State test result: Resultados de cada escuela intermedia en las pruebas de estado realizadas de grado 5 a 8, en matematicas y ELA (English Language Arts)
+
 
 ***
 
@@ -97,12 +120,12 @@ Las escuelas secundarias especializadas de la ciudad de Nueva York se enfrentan 
 Utilizando datos demográficos a nivel escolar, esta sección tiene como objetivo responder dos preguntas: \n
 
 1) __¿Son las "escuelas representativas", que componen la mayoría de las ofertas de SPHS, demograficamente diferentes de otras escuelas?__
-2) __¿Los estudiantes de cuales escuelas públicas tienen menos probabilidades de estar subrepresentados en el proceso de solicitud?__
+2) __¿Los estudiantes de cuales escuelas públicas tienen menos probabilidades de estar representados en el proceso de solicitud?__
 
 ***
 
 ### 2.1 Diferencias demográficas entre escuelas representativas y no representativas
-En un año típico, alrededor de 25,000 estudiantes toman SHSAT, el examen de admisión para las escuelas secundarias especializadas, y solicitan admisión a SPHS, lo que representa 1/3 del total de estudiantes en la ciudad de Nueva York. Sin embargo, las ofertas no se distribuyen equitativamente entre los estudiantes de diferentes escuelas intermedias. En 2018, las 10 mejores escuelas intermedias con la mayoría de los estudiantes admitidos en SPHS representan el 25% de las ofertas totales [2].
+En un año típico, alrededor de 25,000 estudiantes toman el examen de admisión para las escuelas secundarias especializadas SHSAT, y solicitan admisión a alguna de las SPHS, lo que representa 1/3 del total de estudiantes en la ciudad de Nueva York. Sin embargo, las ofertas no se distribuyen equitativamente entre los estudiantes de diferentes escuelas intermedias. En 2018, las 10 mejores escuelas intermedias con la mayoría de los estudiantes admitidos en SPHS representan el 25% de las ofertas totales [2].
 
 Para examinar si las escuelas intermedias con mayores ofertas son demográficamente diferentes de otras escuelas, se realiza la evaluacion de la distribución de tres métricas: __% de alumnas, % de estudiantes afroamericanos e hispanos, y el Índice de Necesidad Económica (ENI)__, que determina la probabilidad de que los estudiantes de la escuela esten en la pobreza (calculado como % de vivienda temporal + % de HRA elegible * 0.5 + % almuerzo gratis elegible * 0.5) [3].
 
@@ -199,7 +222,7 @@ ggplot(data = diversity_tbl, aes(x = economic_need_index, alpha = 0.8)) +
         plot.title = element_text(hjust = 0.5, size = 12, face = "bold"))
 ```
 
-FLa figura 1 ilustra que la proporción de género de las escuelas representativas y no representativas muestra una __distribución similar centrada en el 49% .__ 
+La figura 1 muestra que la proporción de género de las escuelas representativas y no representativas tiene una __distribución similar centrada en el 49% .__ 
 
 Por otro lado, la Figura 2 y la Figura 3 muestran que las escuelas __representativas y no representativas son notablemente diferentes en términos de su composición racial y nivel de necesidad económica.__
 
@@ -247,7 +270,7 @@ diversity_cor <- cor.test(diversity_tbl$economic_need_index,
                           method = "pearson",
                           conf.level = 0.95)
 ```
-El diagrama de dispersión anterior visualiza la correlación positiva (r = 0.77, p <0.01) entre el Índice de Necesidad Económica y el % de estudiantes afroamericanos e hispanos. Las escuelas representativas con más estudiantes admitidos en SPHS (<font color="#53c7f0">__larger-sized blue points__</font>) tienden a tener una necesidad económica de baja a media y una menor proporción de estudiantes afroamericanos o hispanos, mientras que un notable número de escuelas no representativas (<font color="#707070">__gray points__</font>) se agrupan alrededor de la esquina superior derecha del diagrama. En otras palabras, los estudiantes de estas escuelas no representativas son en su mayoría estudiantes hispanos o afroamericanos de bajos ingresos que están subrepresentados en SPHS.
+El diagrama de dispersión anterior visualiza la correlación positiva (r = 0.77, p <0.01) entre el Índice de Necesidad Económica y el % de estudiantes afroamericanos e hispanos. Las escuelas representativas con más estudiantes admitidos en SPHS (<font color="#53c7f0">__puntos grandes azules__</font>) tienden a tener una necesidad económica de baja a media y una menor proporción de estudiantes afroamericanos o hispanos, mientras que un notable número de escuelas no representativas (<font color="#707070">__puntos grises__</font>) se agrupan alrededor de la esquina superior derecha del diagrama. En otras palabras, los estudiantes de estas escuelas no representativas son en su mayoría estudiantes hispanos o afroamericanos de bajos ingresos que están subrepresentados en SPHS.
 
 Para evaluar mejor la necesidad de los estudiantes en diferentes escuelas y ayudar a PASSNYC a priorizar su esfuerzo de divulgación, se asignará a cada escuela intermedia un indicador simple, el __puntaje de subrepresentación__, para cuantificar la probabilidad de que los estudiantes de una escuela dada tengan un bajo rendimiento durante el proceso de solicitud de SPHS. Como el origen del diagrama representa una escuela intermedia sin estudiantes hispanos, afroamericanos y de bajos ingresos, __la puntuación de subrepresentación se calcula como la distancia euclidiana escalada entre un punto dado y el origen con un rango de 0 a 1 .__ Un puntaje de subrepresentación cercano a 1 indica un alto nivel de subrepresentación en las SPHS.
 
@@ -255,12 +278,12 @@ Para evaluar mejor la necesidad de los estudiantes en diferentes escuelas y ayud
 
 ***
 
-### 2.3 Escuelas Intermedias con los puntajes de representacion mas altos
-Para ayudar a PASSNYC a lograr un mayor impacto, es importante identificar qué escuelas intermedias tienen menos representación en SPHS y asignar los recursos de PASSNYC en consecuencia. __Como resultado, el resto del análisis se centrará en el 25% de las escuelas intermedias con el puntaje de subrepresentación más alto, que representan 121 de 482 escuelas intermedias con datos demográficos disponibles .__ Tenga en cuenta que ninguna de estas 121 escuelas tiene más de 5 estudiantes admitido a SPHS en 2018.
+### 2.3 Escuelas Intermedias con los puntajes de subrepresentacion mas altos
+Para ayudar a PASSNYC a lograr un mayor impacto, es importante identificar qué escuelas intermedias tienen menos representación en SPHS y asignar los recursos de PASSNYC en consecuencia. __Como resultado, el resto del análisis se centrará en el 25% de las escuelas intermedias con el puntaje de subrepresentación más alto, que representan 121 de 482 escuelas intermedias con datos demográficos disponibles .__ Tenga en cuenta que ninguna de estas 121 escuelas tiene más de 5 estudiantes admitidos a SPHS en 2018.
 
-La siguiente tabla enumera información sobre estas 121 escuelas clasificadas en orden descendente de su puntaje de representación insuficiente. 
+La siguiente tabla enumera información sobre estas 121 escuelas clasificadas en orden descendente de su puntaje de subrepresentación. 
 
-<center><h4>Top 25% de Escuelas Intermedias con los puntajes de representación más altos</h4></center> 
+<center><h4>Top 25% de Escuelas Intermedias con los puntajes de subrepresentación más altos</h4></center> 
 
 ```{r, echo=FALSE, fig.width = 6, fig.height = 4, fig.align="center", warning=FALSE}
 col_name <- c("Rank", "DBN (ID)", "Distrito", "Nombre de la Escuela", "% Afroamericanos e Hispanicos", 
@@ -429,7 +452,7 @@ final_tbl %>%
 ## 4. Recomendaciones a PASSNYC
 De todas las escuelas intermedias en el cuartil superior (ver sección 2.3) del puntaje de subrepresentación, 119 escuelas intermedias tienen datos disponibles y, por lo tanto, se asignan a uno de los tres clusters de k-means como se muestra en los siguientes diagramas. __ De 119 escuelas, 53 están asignadas al Cluser A y B, lo que indica un alto nivel de calidad educativa y potencial académico. Los estudiantes de estas escuelas intermedias tienen más probabilidades de estar calificados y, por lo tanto, estar motivados para solicitar SPHS, y deben tener mayor prioridad en el esfuerzo de extensión de PASSNYC.
 
-<center><h4>K-means Clusters para el Top 25% de Escuelas Intermedas con el Puntaje de Subrepresentación más alto</h4></center>
+<center><h4>K-means Clusters para el Top 25% de Escuelas Intermedisas con el Puntaje de Subrepresentación más alto</h4></center>
 ```{r, echo = FALSE, fig.width = 10, fig.height = 4, fig.align="center", warning=FALSE, message = FALSE}
 p1<- ggplot(data = final_tbl, aes(x = mean_scale_score_ela, y = mean_scale_score_math)) +
   geom_point(aes(color = cluster_name, 
@@ -477,20 +500,9 @@ p2 <- ggplot(data = target_tbl) +
 grid.arrange(p1, p2, nrow = 1, ncol = 2, widths=c(2, 1))
 ```
 
-Simulacion de budget:
-bajarlo a dinero. 
-ROI?
-que pasaria si los reparto de forma equitativa?
-como si los retorno focalizado?
-cuanto se ha ahorrado?
-cual es la penetracion? 
-
-poner alguna metrica. 
-
-
 ***
 
-### 4.1 Recomendacion 1: Intervencion en el campus para 5 escuelkas en el Cluster A
+### 4.1 Recomendacion 1: Intervencion en el campus para 5 escuelas en el Cluster A
 
 Como se presentó en la Sección 3, el Cluster A representa las escuelas intermedias que tienen más probabilidades de tener estudiantes calificados para SPHS. De todas las escuelas intermedias en el cuartil superior del puntaje de subrepresentación, 5 escuelas están asignadas al Grupo A, pero ninguna de ellas tiene más de 5 estudiantes aceptados por SPHS en 2018. Es probable que los estudiantes de estas escuelas se beneficien más de servicios proporcionados por PASSNYC y sus socios, y estas escuelas deben tener la máxima prioridad en el plan de PASSNYC. Como resultado, se recomienda la intervención en el campus en estas escuelas intermedias. 
 
